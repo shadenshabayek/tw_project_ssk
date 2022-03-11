@@ -63,8 +63,10 @@ if __name__=="__main__":
         collect_twitter_data(
             list_individuals = list_initial,
             query = query,
-            start_time = '2022-01-23T23:00:00Z',
-            end_time = '2022-02-23T23:00:00Z',
+            #start_time = '2022-01-23T23:00:00Z',
+            start_time = '2022-01-01T23:00:00Z',
+            #end_time = '2022-02-23T23:00:00Z',
+            end_time = '2022-03-01T23:00:00Z',
             bearer_token= os.getenv('TWITTER_TOKEN'),
             filename = os.path.join('.', 'data', 'dataset_2_tweets_' + timestr + '.csv'),
             )

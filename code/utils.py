@@ -76,8 +76,10 @@ def write_results(json_response, filename, query, list_individuals):
                                  "in_reply_to_username",
                                  "in_reply_to_username_within_list",
                                  "quoted_user_id",
-                                 'quoted_username',
-                                 'quoted_username_within_list',
+                                 "quoted_username",
+                                 "quoted_username_within_list",
+                                 "retweeted_username",
+                                 "retweeted_username_within_list",
                                  "mentions_username",
                                  "mentions_username_within_list",
                                  "lang",
@@ -128,9 +130,10 @@ def write_results(json_response, filename, query, list_individuals):
                         if 'in_reply_to_user_id' in tweet.keys():
 
                             if tweet['in_reply_to_user_id'] == user['id']:
-                                tweet['in_reply_to_username'] = user['username']
 
                                 a = user['username'].lower()
+
+                                tweet['in_reply_to_username'] = a
 
                                 if a in list_individuals:
 
@@ -252,6 +255,22 @@ def write_results(json_response, filename, query, list_individuals):
                                     tweet['possibly_sensitive'] = tw['possibly_sensitive']
                                     tweet['text'] = tw['text']
 
+                                    if tweet['referenced_tweets'][0]['type'] == 'retweeted':
+
+                                        if 'entities' in tweet :
+
+                                            if 'mentions' in tweet['entities'].keys():
+
+                                                if tweet['entities']['mentions'][0]['id'] == tw['author_id'] :
+
+                                                    a = tweet['entities']['mentions'][0]['username']
+                                                    b = a.lower()
+
+                                                    tweet['retweeted_username'] = b
+
+                                                    if b in list_individuals:
+
+                                                        tweet['retweeted_username_within_list'] = b
 
                                     if tweet['referenced_tweets'][0]['type'] == 'quoted':
 
@@ -373,6 +392,7 @@ def write_results(json_response, filename, query, list_individuals):
                 tweet["query"] = query
                 tweet["username"] = tweet["username"].lower()
 
+
                 if len(tweet["mentions_username"]) > 1:
                     tweet["mentions_username"] = list(set(tweet["mentions_username"]))
 
@@ -441,6 +461,8 @@ def collect_twitter_data(list_individuals, query, start_time, end_time, bearer_t
                                  "quoted_user_id",
                                  'quoted_username',
                                  'quoted_username_within_list',
+                                 "retweeted_username",
+                                 "retweeted_username_within_list",
                                  "mentions_username",
                                  "mentions_username_within_list",
                                  "lang",
