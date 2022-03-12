@@ -24,3 +24,5 @@ __pycache__
 *.bbl
 
 *.mod
+
+get_twitter_handles_pol.py

@@ -11,7 +11,7 @@ import numpy as np
 import requests
 
 from csv import writer
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 from time import sleep
 from matplotlib import pyplot as plt
 from minet import multithreaded_resolve
@@ -483,31 +483,6 @@ def collect_twitter_data(list_individuals, query, start_time, end_time, bearer_t
         if not file_exists:
             writer.writeheader()
 
-    # try:
-    #     next_token, count = get_next_token(query, None, count, filename, start_time, end_time, bearer_token)
-    #
-    # except ValueError as error:
-    #     print(type(error), error)
-    #     flag = False
-    #
-    # except Exception as error:
-    #     code, text = error.args
-    #     if code == 429:
-    #         print("Too many requests, sleeping and retry")
-    #         time.sleep(6)
-    #         next_token, count = get_next_token(query, None, count, filename, start_time, end_time, bearer_token)
-    #     if code == 503:
-    #         print("service unav, sleeping and retry")
-    #         time.sleep(6)
-    #         next_token, count = get_next_token(query, None, count, filename, start_time, end_time, bearer_token)
-    #
-    # except ConnectionError as error:
-    #     code, text = error.args
-    #     if code == 54:
-    #         print("Connection error, sleeping and retry")
-    #         time.sleep(3)
-    #         next_token, count = get_next_token(query, None, count, filename, start_time, end_time, bearer_token)
-
     next_token = None
 
     while flag:
@@ -543,6 +518,7 @@ def connect_to_endpoint_liking_users(bearer_token, tweet_id, next_token=None):
             raise Exception(response.status_code, response.text)
 
         return response.json()
+
 
 """ General functions to save data and import it """
 
@@ -688,3 +664,166 @@ def get_user_metrics(bearer_token, list, filename):
         json_response = connect_to_endpoint_user_metrics(url, headers)
         write_results_user_metrics(json_response, filename, user)
         sleep(3)
+
+
+"""Get following users of a user """
+
+def connect_to_endpoint_following_users(bearer_token, author_id, next_token=None):
+    #rate limit 75 calls per 15min window.
+    #order of likes: most recent
+    max_results = 1000
+
+    headers = {"Authorization": "Bearer {}".format(bearer_token)}
+
+    params = {"user.fields":"username,name,description,location,created_at,entities,public_metrics"}
+
+    if (next_token is not None):
+        url = "https://api.twitter.com/2/users/{}/following?max_results={}&pagination_token={}".format(author_id, max_results, next_token)
+    else:
+        url = "https://api.twitter.com/2/users/{}/following?max_results={}".format(author_id, max_results)
+
+    with requests.request("GET", url, params=params, headers=headers) as response:
+
+        if response.status_code != 200:
+            raise Exception(response.status_code, response.text)
+
+        #print(response.json())
+
+        return response.json()
+
+def write_results_following_users(json_response, filename, author_id, author_name, author_following_count, list_individuals):
+
+    with open(filename, "a+") as tweet_file:
+
+        writer = csv.DictWriter(tweet_file,
+                                ["author_id",
+                                "source_username",
+                                "source_following_count",
+                                "following_username",
+                                "following_within_list",
+                                "id",
+                                "name",
+                                "location",
+                                "following_count",
+                                "followers_count",
+                                "tweet_count",
+                                "created_at",
+                                "description",
+                                "collection_date",
+                                "collection_method"], extrasaction='ignore')
+
+        if 'data' in json_response:
+
+            for tweet in json_response['data']:
+
+
+                #tweet['following_user_id'] = tweet['id']
+                #tweet['following_name'] = tweet['name']
+
+                if 'public_metrics' in tweet.keys():
+
+                    tweet['followers_count'] = tweet['public_metrics']["followers_count"]
+                    tweet['following_count'] = tweet['public_metrics']["following_count"]
+                    tweet['tweet_count'] = tweet['public_metrics']["tweet_count"]
+
+                #if 'location' in tweet.keys():
+                #    tweet['following_location'] = tweet['location']
+
+
+
+
+                tweet['following_username'] = tweet['username'].lower()
+
+                a = tweet['username'].lower()
+                if a in list_individuals :
+                    tweet['following_within_list'] = a
+
+                #tweet['following_user_description'] = tweet['description']
+
+                timestr = time.strftime("%Y-%m-%d")
+                tweet["collection_date"] = timestr
+                tweet["collection_method"] = "Twitter API V2"
+                tweet["author_id"] = author_id
+                tweet['source_username'] = author_name
+                tweet['source_following_count'] = author_following_count
+
+                #tweet["username"] =
+                writer.writerow(tweet)
+
+        else:
+            pass
+            # tweet = {}
+            # tweet['username'] = user
+            # tweet['description'] = 'did not find the account, deleted or suspended'
+            # writer.writerow(tweet)
+            # print('did not find the account')
+
+def get_next_token_following(list_individuals, author_id, author_name, author_following_count, token, count, filename, bearer_token):
+
+    json_response = connect_to_endpoint_following_users(bearer_token, author_id, token)
+
+    result_count = json_response['meta']['result_count']
+
+    if 'next_token' in json_response['meta']:
+
+        next_token = json_response['meta']['next_token']
+        sleep(60)
+        #print(next_token)
+        if result_count is not None and result_count > 0:
+
+            count += result_count
+            print(count)
+        #try:
+        write_results_following_users(json_response, filename, author_id, author_name, author_following_count, list_individuals)
+        return next_token, count
+    else:
+        write_results_following_users(json_response, filename, author_id, author_name, author_following_count, list_individuals)
+        return None, count
+
+def collect_following_data(list_individuals, author_id, author_name, author_following_count, bearer_token, filename):
+
+    print(author_id)
+
+    flag = True
+    count = 0
+    file_exists = os.path.isfile(filename)
+
+    with open(filename, "a+") as tweet_file:
+
+        writer = csv.DictWriter(tweet_file,
+                                ["author_id",
+                                "source_username",
+                                "source_following_count",
+                                "following_username",
+                                "following_within_list",
+                                "id",
+                                "name",
+                                "location",
+                                "following_count",
+                                "followers_count",
+                                "tweet_count",
+                                "created_at",
+                                "description",
+                                "collection_date",
+                                "collection_method"], extrasaction='ignore')
+        if not file_exists:
+            writer.writeheader()
+
+    next_token = None
+
+    while flag:
+        next_token, count = get_next_token_following(list_individuals, author_id, author_name, author_following_count, next_token, count, filename, bearer_token)
+        if count >= 100000:
+            break
+        if next_token is None:
+            flag = False
+
+
+    print("Total following users saved: {}".format(count))
+
+
+# if __name__=="__main__":
+#
+#     load_dotenv()
+#     bearer_token= os.getenv('TWITTER_TOKEN')
+#     connect_to_endpoint_following_users(bearer_token = bearer_token , user_id = 2244994945, next_token=None)
