@@ -45,7 +45,7 @@ def get_users_list(updated_list):
 
 def get_users_from_previous_collection():
 
-    df = import_data('dataset_1_user_metrics_2022_02_23.csv')
+    df = import_data('dataset_1_user_metrics_2022_03_11.csv')
 
     list = df['username'].to_list()
     print(len(list))
@@ -55,7 +55,7 @@ def get_users_from_previous_collection():
 if __name__=="__main__":
 
     #list = get_users_list(updated_list = 1)
-    list = get_users_from_previous_collection() 
+    list = get_users_from_previous_collection()
     timestr = time.strftime("%Y_%m_%d")
 
     load_dotenv()
