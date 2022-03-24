@@ -693,6 +693,10 @@ def connect_to_endpoint_following_users(bearer_token, author_id, next_token=None
 
 def write_results_following_users(json_response, filename, author_id, author_name, author_following_count, list_individuals):
 
+    # df = import_data('dataset_3_following_2022_03_19.csv')
+    # df = df[df['author_id'] == 14658057]
+    # list_foll = df['following_username'].tolist()
+
     with open(filename, "a+") as tweet_file:
 
         writer = csv.DictWriter(tweet_file,
@@ -708,7 +712,7 @@ def write_results_following_users(json_response, filename, author_id, author_nam
                                 "followers_count",
                                 "tweet_count",
                                 "created_at",
-                                "description",
+                                #"description",
                                 "collection_date",
                                 "collection_method"], extrasaction='ignore')
 
@@ -729,9 +733,6 @@ def write_results_following_users(json_response, filename, author_id, author_nam
                 #if 'location' in tweet.keys():
                 #    tweet['following_location'] = tweet['location']
 
-
-
-
                 tweet['following_username'] = tweet['username'].lower()
 
                 a = tweet['username'].lower()
@@ -747,7 +748,8 @@ def write_results_following_users(json_response, filename, author_id, author_nam
                 tweet['source_username'] = author_name
                 tweet['source_following_count'] = author_following_count
 
-                #tweet["username"] =
+
+                #if tweet['following_username'] not in list_foll:
                 writer.writerow(tweet)
 
         else:
@@ -761,24 +763,34 @@ def write_results_following_users(json_response, filename, author_id, author_nam
 def get_next_token_following(list_individuals, author_id, author_name, author_following_count, token, count, filename, bearer_token):
 
     json_response = connect_to_endpoint_following_users(bearer_token, author_id, token)
+    #print(json_response)
 
-    result_count = json_response['meta']['result_count']
+    if 'meta' in json_response:
+        result_count = json_response['meta']['result_count']
 
-    if 'next_token' in json_response['meta']:
+        if 'next_token' in json_response['meta']:
 
-        next_token = json_response['meta']['next_token']
-        sleep(60)
-        #print(next_token)
-        if result_count is not None and result_count > 0:
+            sleep(90)
+            next_token = json_response['meta']['next_token']
 
-            count += result_count
-            print(count)
-        #try:
-        write_results_following_users(json_response, filename, author_id, author_name, author_following_count, list_individuals)
-        return next_token, count
-    else:
-        write_results_following_users(json_response, filename, author_id, author_name, author_following_count, list_individuals)
-        return None, count
+            #print(next_token)
+            if result_count is not None and result_count > 0:
+
+                count += result_count
+                print(count)
+            #try:
+            write_results_following_users(json_response, filename, author_id, author_name, author_following_count, list_individuals)
+            return next_token, count
+        else:
+            write_results_following_users(json_response, filename, author_id, author_name, author_following_count, list_individuals)
+            return None, count
+
+    elif 'errors' in json_response:
+        print(json_response['errors'][0]['title'])
+        print(author_id, author_name, 'check this individual')
+        pass
+
+
 
 def collect_following_data(list_individuals, author_id, author_name, author_following_count, bearer_token, filename):
 
@@ -803,11 +815,22 @@ def collect_following_data(list_individuals, author_id, author_name, author_foll
                                 "followers_count",
                                 "tweet_count",
                                 "created_at",
-                                "description",
+                                #"description",
                                 "collection_date",
                                 "collection_method"], extrasaction='ignore')
         if not file_exists:
             writer.writeheader()
+
+    # try:
+    #     next_token, count = get_next_token_following(list_individuals, author_id, author_name, author_following_count, None, count, filename, bearer_token)
+    #
+    # except Exception as error:
+    #     code, text = error.args
+    #     if code == 429:
+    #         print("Too many requests, sleeping and retry")
+    #         time.sleep(1000)
+    #         next_token, count = get_next_token_following(list_individuals, author_id, author_name, author_following_count, None, count, filename, bearer_token)
+
 
     next_token = None
 
