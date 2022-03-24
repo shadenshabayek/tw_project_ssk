@@ -1,29 +1,25 @@
-# Script for the LinkLab Project
 
-## Dataset 0: get twitter usernames 
+## Get Users Metrics
 
-## Dataset 1: get users metrics
-
-Run the following script, to get Twitter users metrics (followers counts, following, description, etc.) based on the list from Dataset 0: 
+Run the following script, to get Twitter users metrics (followers counts, following, description, etc.) based on a list of Twitter usernames: 
 
 ```
 python3 ./code/get_users_metrics_twitter.py 
 ```
 
-## Dataset 2: collect tweets 
+## Collect Tweets 
 
-Run the following script, to get the Tweets of users based on the list from Dataset 0 (this includes referenced tweet id, retweeted/quoted/replied_to/mentionned users within list from Dataset 0) : 
+Run the following script, to get the Tweets of users based on a list of Twitter usernames (this includes referenced tweet id, retweeted/quoted/replied_to/mentioned users within a specific list of Twitter usernames) : 
 
 ```
 python3 ./code/collect_twitter_data_historical.py
 ```
 
-## Dataset 3 : collect following users (friends)
+## Collect Following Users (friends)
 
-Run the following script, to get the Following users or friends of users based on the list from Dataset 0 (this includes Following users within list from Dataset 0) :
+Run the following script, to get the Following users (or friends) of users based on on a list of Twitter accounts ID (this includes Following users within a specific list of Twitter usernames) :
 
 ```
 python3 ./code/collect_following_users.py
 ```
 
-## Dataset 4 : collect liked tweets 
