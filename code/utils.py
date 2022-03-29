@@ -770,7 +770,7 @@ def get_next_token_following(list_individuals, author_id, author_name, author_fo
 
         if 'next_token' in json_response['meta']:
 
-            sleep(90)
+            sleep(62)
             next_token = json_response['meta']['next_token']
 
             #print(next_token)
