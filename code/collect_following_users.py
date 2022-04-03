@@ -9,24 +9,31 @@ from time import sleep
 
 from utils import (collect_following_data,
                     tic,
-                    toc,
-                    import_data)
+                    toc)
 
+def clean_dataframe (df):
 
-def get_list_users_id():
-
-    #df = import_data('dataset_1_user_metrics_2022_03_11.csv')
-    data_path = './data/dataset_1_user_metrics_2022_03_18.csv'
-    df = pd.read_csv(data_path, dtype='str') #important sinon conversion float64 to int64 of ID changes last digit
     description = ['did not find the account, deleted or suspended']
     df = df[~df['description'].isin(description)]
+    df = df[~df['protected'].isin(['True'])]
 
     df['follower_count'] = df['follower_count'].astype('int64')
     df['id'] = df['id'].astype('int64')
     df['following_count'] = df['following_count'].astype('int64')
 
     df = df.sort_values(by = 'follower_count', ascending = False)
-    df = df[~df['protected'].isin(['True'])]
+
+    return df
+
+
+def get_list_users_id (data_path):
+
+    data_path = data_path
+    #important: read data as str, otherwise conversion from float64 to int64 of
+    #long twitter ID can change last digit.
+    df_initial = pd.read_csv(data_path, dtype='str')
+
+    df = clean_dataframe (df_initial)
 
     list_users = df['username'].tolist()
     list_users_id = df['id'].tolist()
@@ -35,21 +42,19 @@ def get_list_users_id():
 
     return list_users, list_users_id, list_following
 
-if __name__=="__main__":
+def main():
 
-  load_dotenv()
-  #timestr = time.strftime("%Y_%m_%d")
-  timestr = '2022_03_23'
-  list_users, list_users_id, list_following = get_list_users_id()
+    load_dotenv()
 
-  print(list_following[2036:2100])
-  print('total calls', round(sum(list_following[2036:2100])/1000))
-  print(list_users[2036:2100])
-  print(list_users_id[2036:2100])
+    timestr = time.strftime("%Y_%m_%d")
+    path = './data/dataset_1_user_metrics_2022_03_18.csv'
 
-  tic()
-  for i in range(2036,2100):
+    list_users, list_users_id, list_following = get_list_users_id(data_path = path)
+    l = len(list_users_id)
 
+    tic()
+    for i in range(0,l):
+      print(i)
       collect_following_data(list_individuals = list_users ,
                              author_id = list_users_id[i],
                              author_name = list_users[i],
@@ -58,4 +63,8 @@ if __name__=="__main__":
                              filename = os.path.join('.', 'data', 'dataset_3_following_' + timestr + '.csv'))
 
       sleep(62)
-  toc()
+    toc()
+
+if __name__=="__main__":
+
+    main()
