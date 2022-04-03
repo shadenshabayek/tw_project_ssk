@@ -1,7 +1,6 @@
 import csv
 import datetime
 import glob
-#import dotenv
 import json
 import time
 import os
@@ -15,26 +14,14 @@ from dotenv import load_dotenv
 from time import sleep
 from matplotlib import pyplot as plt
 from minet import multithreaded_resolve
-#from pandas.api.types import CategoricalDtype
 from ural import get_domain_name
 from ural import is_shortened_url
 
-#google spreadsheet
-#import gspread
-#from oauth2client.service_account import ServiceAccountCredentials
-
-
-
-"""Functions to collect historical search twitter data from the API v2"""
-
-#documentation: https://developer.twitter.com/en/docs/twitter-api/tweets/search/api-reference/get-tweets-search-all
-#max_results: A number between 10 and the system limit (currently 500). By default, a request response will return 10 results.
-#300 requests per 15-minute window (app auth)
-#Updates: max results is now 100!
-
 
 def connect_to_endpoint_historical_search(bearer_token, query, start_time, end_time, next_token=None):
-
+    #max_results: A number between 10 and the system limit (currently 500). By default, a request response will return 10 results.
+    #300 requests per 15-minute window (app auth)
+    #changelog: max results is now 100!
     max_results=100
 
     headers = {"Authorization": "Bearer {}".format(bearer_token)}
@@ -406,7 +393,6 @@ def write_results(json_response, filename, query, list_individuals):
                 writer.writerow(tweet)
 
         else:
-            #raise ValueError("User not found")
             pass
 
 def get_next_token(list_individuals, query, token, count, filename, start_time, end_time, bearer_token):
@@ -418,7 +404,6 @@ def get_next_token(list_individuals, query, token, count, filename, start_time, 
     if 'next_token' in json_response['meta']:
         sleep(3)
         next_token = json_response['meta']['next_token']
-        #print(next_token)
         if result_count is not None and result_count > 0:
 
             count += result_count
@@ -687,15 +672,9 @@ def connect_to_endpoint_following_users(bearer_token, author_id, next_token=None
         if response.status_code != 200:
             raise Exception(response.status_code, response.text)
 
-        #print(response.json())
-
         return response.json()
 
 def write_results_following_users(json_response, filename, author_id, author_name, author_following_count, list_individuals):
-
-    # df = import_data('dataset_3_following_2022_03_19.csv')
-    # df = df[df['author_id'] == 14658057]
-    # list_foll = df['following_username'].tolist()
 
     with open(filename, "a+") as tweet_file:
 
@@ -712,7 +691,6 @@ def write_results_following_users(json_response, filename, author_id, author_nam
                                 "followers_count",
                                 "tweet_count",
                                 "created_at",
-                                #"description",
                                 "collection_date",
                                 "collection_method"], extrasaction='ignore')
 
@@ -720,26 +698,17 @@ def write_results_following_users(json_response, filename, author_id, author_nam
 
             for tweet in json_response['data']:
 
-
-                #tweet['following_user_id'] = tweet['id']
-                #tweet['following_name'] = tweet['name']
-
                 if 'public_metrics' in tweet.keys():
 
                     tweet['followers_count'] = tweet['public_metrics']["followers_count"]
                     tweet['following_count'] = tweet['public_metrics']["following_count"]
                     tweet['tweet_count'] = tweet['public_metrics']["tweet_count"]
 
-                #if 'location' in tweet.keys():
-                #    tweet['following_location'] = tweet['location']
-
                 tweet['following_username'] = tweet['username'].lower()
 
                 a = tweet['username'].lower()
                 if a in list_individuals :
                     tweet['following_within_list'] = a
-
-                #tweet['following_user_description'] = tweet['description']
 
                 timestr = time.strftime("%Y-%m-%d")
                 tweet["collection_date"] = timestr
@@ -748,22 +717,14 @@ def write_results_following_users(json_response, filename, author_id, author_nam
                 tweet['source_username'] = author_name
                 tweet['source_following_count'] = author_following_count
 
-
-                #if tweet['following_username'] not in list_foll:
                 writer.writerow(tweet)
 
         else:
             pass
-            # tweet = {}
-            # tweet['username'] = user
-            # tweet['description'] = 'did not find the account, deleted or suspended'
-            # writer.writerow(tweet)
-            # print('did not find the account')
 
 def get_next_token_following(list_individuals, author_id, author_name, author_following_count, token, count, filename, bearer_token):
 
     json_response = connect_to_endpoint_following_users(bearer_token, author_id, token)
-    #print(json_response)
 
     if 'meta' in json_response:
         result_count = json_response['meta']['result_count']
@@ -793,7 +754,6 @@ def get_next_token_following(list_individuals, author_id, author_name, author_fo
 
 
 def collect_following_data(list_individuals, author_id, author_name, author_following_count, bearer_token, filename):
-
     print(author_id)
 
     flag = True
@@ -815,22 +775,10 @@ def collect_following_data(list_individuals, author_id, author_name, author_foll
                                 "followers_count",
                                 "tweet_count",
                                 "created_at",
-                                #"description",
                                 "collection_date",
                                 "collection_method"], extrasaction='ignore')
         if not file_exists:
             writer.writeheader()
-
-    # try:
-    #     next_token, count = get_next_token_following(list_individuals, author_id, author_name, author_following_count, None, count, filename, bearer_token)
-    #
-    # except Exception as error:
-    #     code, text = error.args
-    #     if code == 429:
-    #         print("Too many requests, sleeping and retry")
-    #         time.sleep(1000)
-    #         next_token, count = get_next_token_following(list_individuals, author_id, author_name, author_following_count, None, count, filename, bearer_token)
-
 
     next_token = None
 
@@ -843,10 +791,3 @@ def collect_following_data(list_individuals, author_id, author_name, author_foll
 
 
     print("Total following users saved: {}".format(count))
-
-
-# if __name__=="__main__":
-#
-#     load_dotenv()
-#     bearer_token= os.getenv('TWITTER_TOKEN')
-#     connect_to_endpoint_following_users(bearer_token = bearer_token , user_id = 2244994945, next_token=None)
