@@ -46,7 +46,6 @@ def get_users_list(updated_list):
 def get_users_from_previous_collection():
 
     df = import_data('dataset_1_user_metrics_2022_03_25.csv')
-
     list = df['username'].to_list()
     print(len(list))
 
@@ -54,13 +53,10 @@ def get_users_from_previous_collection():
 
 if __name__=="__main__":
 
-    #list = get_users_list(updated_list = 1)
     list = get_users_from_previous_collection()
     timestr = time.strftime("%Y_%m_%d")
 
     load_dotenv()
-    tic()
     get_user_metrics(bearer_token = os.getenv('TWITTER_TOKEN'),
                 list = list,
                 filename = os.path.join('.', 'data', 'dataset_1_user_metrics_' + timestr  + '.csv'))
-    toc()

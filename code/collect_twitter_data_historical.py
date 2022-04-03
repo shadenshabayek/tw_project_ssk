@@ -27,7 +27,6 @@ def get_list_users(collection_interupted):
     elif collection_interupted == 1 :
 
         timestr = time.strftime("%Y_%m_%d")
-        #timestr = '2022_02_25'
         df_collected = import_data('dataset_2_tweets_' + timestr  + '.csv')
 
         list1 = df_collected.username.unique().tolist()
@@ -38,8 +37,7 @@ def get_list_users(collection_interupted):
 
     return list_users
 
-
-if __name__=="__main__":
+def main():
 
     load_dotenv()
 
@@ -63,3 +61,8 @@ if __name__=="__main__":
             )
         sleep(3)
     toc()
+
+
+if __name__=="__main__":
+
+    main()
