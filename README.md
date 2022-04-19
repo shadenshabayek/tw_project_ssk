@@ -23,3 +23,11 @@ Run the following script, to get the Following users (or friends) of users based
 python3 ./code/collect_following_users.py
 ```
 
+## Collect Liked Tweets 
+
+Run the following script, to get the last 200 tweets of a given user based on on a list of Twitter accounts ID  :
+
+```
+python3 ./code/collect_liked_tweets.py
+```
+

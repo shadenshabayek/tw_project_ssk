@@ -49,8 +49,8 @@ def main():
     path = './data/dataset_1_user_metrics_2022_04_15.csv'
 
     list_users, list_users_id = get_list_users_id(data_path = path)
-    #l = len(list_users_id)
-    l = 10
+    l = len(list_users_id)
+
     tic()
     for i in range(0,l):
       print(i)
