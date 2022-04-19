@@ -17,6 +17,8 @@ def get_list_users(collection_interupted):
     df = df.sort_values(by = 'follower_count', ascending = False)
     description = ['did not find the account, deleted or suspended']
     df = df[~df['description'].isin(description)]
+    df['protected'] = df['protected'].astype(str)
+    df = df[~df['protected'].isin(['True'])]
     print(len(df))
 
     if collection_interupted == 0:
@@ -37,11 +39,12 @@ def get_list_users(collection_interupted):
 
     return list_users
 
-def main():
+def main(start, end):
 
     load_dotenv()
 
     timestr = time.strftime("%Y_%m_%d")
+    timestr = '2022_04_03'
     list_initial = get_list_users(collection_interupted = 0)
 
     list_users = list_initial
@@ -54,8 +57,8 @@ def main():
         collect_twitter_data(
             list_individuals = list_initial,
             query = query,
-            start_time = '2022-01-01T23:00:00Z',
-            end_time = '2022-03-01T23:00:00Z',
+            start_time = start,
+            end_time = end,
             bearer_token= os.getenv('TWITTER_TOKEN'),
             filename = os.path.join('.', 'data', 'dataset_2_tweets_' + timestr + '.csv'),
             )
@@ -65,4 +68,8 @@ def main():
 
 if __name__=="__main__":
 
-    main()
+    # main(start =  '2022-01-01T23:00:00Z',
+    #     end = '2022-03-01T23:00:00Z')
+
+    main(start =  '2022-03-01T23:00:00Z',
+        end = '2022-04-01T23:00:00Z')
