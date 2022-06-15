@@ -26,7 +26,7 @@ def connect_to_endpoint_historical_search(bearer_token, query, start_time, end_t
 
     headers = {"Authorization": "Bearer {}".format(bearer_token)}
 
-    params = {"tweet.fields" : "in_reply_to_user_id,author_id,context_annotations,created_at,public_metrics,entities,geo,id,possibly_sensitive,lang,referenced_tweets", "user.fields":"username,name,description,location,created_at,entities,public_metrics","expansions":"author_id,referenced_tweets.id,referenced_tweets.id.author_id,attachments.media_keys"}
+    params = {"tweet.fields" : "in_reply_to_user_id,author_id,context_annotations,created_at,public_metrics,entities,geo,id,possibly_sensitive,lang,referenced_tweets,conversation_id", "user.fields":"username,name,description,location,created_at,entities,public_metrics","expansions":"author_id,referenced_tweets.id,referenced_tweets.id.author_id,attachments.media_keys"}
 
     if (next_token is not None):
         url = "https://api.twitter.com/2/tweets/search/all?max_results={}&query={}&start_time={}&end_time={}&next_token={}".format(max_results, query, start_time, end_time, next_token)
@@ -42,12 +42,14 @@ def connect_to_endpoint_historical_search(bearer_token, query, start_time, end_t
 
 def write_results(json_response, filename, query, list_individuals):
 
+    #print(json_response['data'])
     with open(filename, "a+") as tweet_file:
 
         writer = csv.DictWriter(tweet_file,
                                 ["query",
                                 "type_of_tweet",
                                 "referenced_tweet_id",
+                                "conversation_id",
                                  "id",
                                  "author_id",
                                  "username",
@@ -58,6 +60,7 @@ def write_results(json_response, filename, query, list_individuals):
                                  "retweet_count",
                                  "reply_count",
                                  "like_count",
+                                 "quote_count",
                                  "hashtags",
                                  "in_reply_to_user_id",
                                  "in_reply_to_username",
@@ -228,8 +231,8 @@ def write_results(json_response, filename, query, list_individuals):
                     tweet["type_of_tweet"] = tweet["referenced_tweets"][0]["type"]
                     tweet["referenced_tweet_id"] = tweet["referenced_tweets"][0]["id"]
 
-                    if (tweet["referenced_tweets"][0]["type"] == "retweeted" or tweet["referenced_tweets"][0]["type"] == "quoted" or tweet["referenced_tweets"][0]["type"] == "replied_to"):
-
+                    #if (tweet["referenced_tweets"][0]["type"] == "retweeted" or tweet["referenced_tweets"][0]["type"] == "quoted" or tweet["referenced_tweets"][0]["type"] == "replied_to"):
+                    if (tweet["referenced_tweets"][0]["type"] == "retweeted" or tweet["referenced_tweets"][0]["type"] == "quoted"):
                         if "tweets" in json_response["includes"]:
 
                             for tw in json_response["includes"]["tweets"]:
@@ -239,6 +242,9 @@ def write_results(json_response, filename, query, list_individuals):
                                     tweet['retweet_count'] = tw["public_metrics"]["retweet_count"]
                                     tweet['reply_count'] = tw["public_metrics"]["reply_count"]
                                     tweet['like_count'] = tw["public_metrics"]["like_count"]
+                                    if 'quote_count' in tweet["public_metrics"].keys():
+                                        tweet['quote_count'] = tw["public_metrics"]["quote_count"]
+
                                     tweet['possibly_sensitive'] = tw['possibly_sensitive']
                                     tweet['text'] = tw['text']
 
@@ -369,12 +375,21 @@ def write_results(json_response, filename, query, list_individuals):
                     #     tweet['retweet_count'] = tweet["public_metrics"]["retweet_count"]
                     #     tweet['reply_count'] = tweet["public_metrics"]["reply_count"]
                     #     tweet['like_count'] = tweet["public_metrics"]["like_count"]
+                    elif tweet["referenced_tweets"][0]["type"] == "replied_to" :
+                        tweet['retweet_count'] = tweet["public_metrics"]["retweet_count"]
+                        tweet['reply_count'] = tweet["public_metrics"]["reply_count"]
+                        tweet['like_count'] = tweet["public_metrics"]["like_count"]
+                        if 'quote_count' in tweet["public_metrics"].keys():
+                            tweet['quote_count'] = tweet["public_metrics"]["quote_count"]
+
 
                 else:
 
                     tweet['retweet_count'] = tweet["public_metrics"]["retweet_count"]
                     tweet['reply_count'] = tweet["public_metrics"]["reply_count"]
                     tweet['like_count'] = tweet["public_metrics"]["like_count"]
+                    if 'quote_count' in tweet["public_metrics"].keys():
+                        tweet['quote_count'] = tweet["public_metrics"]["quote_count"]
 
                 tweet["query"] = query
                 tweet["username"] = tweet["username"].lower()
@@ -429,6 +444,7 @@ def collect_twitter_data(list_individuals, query, start_time, end_time, bearer_t
                                 ["query",
                                 "type_of_tweet",
                                 "referenced_tweet_id",
+                                "conversation_id",
                                  "id",
                                  "author_id",
                                  "username",
@@ -439,6 +455,7 @@ def collect_twitter_data(list_individuals, query, start_time, end_time, bearer_t
                                  "retweet_count",
                                  "reply_count",
                                  "like_count",
+                                 "quote_count",
                                  "hashtags",
                                  "in_reply_to_user_id",
                                  "in_reply_to_username",

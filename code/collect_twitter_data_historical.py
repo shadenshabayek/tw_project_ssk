@@ -11,15 +11,15 @@ from utils import (collect_twitter_data,
                     import_data)
 
 
-def get_list_users(collection_interupted):
+def get_list_users(collection_interupted, filename):
 
-    df = import_data('dataset_1_user_metrics_2022_04_01.csv')
+    df = import_data(filename)
     df = df.sort_values(by = 'follower_count', ascending = False)
     description = ['did not find the account, deleted or suspended']
     df = df[~df['description'].isin(description)]
     df['protected'] = df['protected'].astype(str)
     df = df[~df['protected'].isin(['True'])]
-    print(len(df))
+    print('number of users, after removing inexistant/suspended/protected accounts', len(df))
 
     if collection_interupted == 0:
 
@@ -29,7 +29,7 @@ def get_list_users(collection_interupted):
     elif collection_interupted == 1 :
 
         timestr = time.strftime("%Y_%m_%d")
-        df_collected = import_data('dataset_2_tweets_' + timestr  + '.csv')
+        df_collected = import_data('dataset_2_tweets_new_list_' + timestr  + '.csv')
 
         list1 = df_collected.username.unique().tolist()
         print('Number of users for which the tweets were collected', len(list1))
@@ -44,8 +44,11 @@ def main(start, end):
     load_dotenv()
 
     timestr = time.strftime("%Y_%m_%d")
-    timestr = '2022_04_03'
-    list_initial = get_list_users(collection_interupted = 0)
+    #timestr = '2022_06_13'
+    filename = 'dataset_1_user_metrics_new_list_2022_06_12.csv'
+    collection_interupted = 0
+    list_initial = get_list_users(collection_interupted = collection_interupted,
+                                  filename = filename)
 
     list_users = list_initial
     list_users_tw =['from:' + user for user in list_users]
@@ -60,7 +63,7 @@ def main(start, end):
             start_time = start,
             end_time = end,
             bearer_token= os.getenv('TWITTER_TOKEN'),
-            filename = os.path.join('.', 'data', 'dataset_2_tweets_' + timestr + '.csv'),
+            filename = os.path.join('.', 'data', 'dataset_2_tweets_new_list_' + timestr + '.csv'),
             )
         sleep(3)
     toc()
@@ -71,5 +74,14 @@ if __name__=="__main__":
     # main(start =  '2022-01-01T23:00:00Z',
     #     end = '2022-03-01T23:00:00Z')
 
-    main(start =  '2022-03-01T23:00:00Z',
-        end = '2022-04-01T23:00:00Z')
+    # main(start =  '2022-03-01T23:00:00Z',
+    #     end = '2022-04-01T23:00:00Z')
+
+    # main(start =  '2022-04-01T23:00:00Z',
+    #     end = '2022-05-01T23:00:00Z')
+
+    # main(start =  '2022-03-01T23:00:00Z',
+    #     end = '2022-04-01T23:00:00Z')
+
+    main(start =  '2022-05-01T23:00:00Z',
+        end = '2022-06-01T23:00:00Z')
