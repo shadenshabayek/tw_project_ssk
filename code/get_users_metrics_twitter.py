@@ -67,8 +67,8 @@ def get_idle_accounts():
 def main():
     #list = get_users_from_previous_collection()
     list = get_users_list_updated_2022_05_31()
-    #timestr = time.strftime("%Y_%m_%d")
-    timestr = '2022_06_12'
+    timestr = time.strftime("%Y_%m_%d")
+    #timestr = '2022_06_12'
 
     load_dotenv()
     get_user_metrics(bearer_token = os.getenv('TWITTER_TOKEN'),
@@ -77,5 +77,5 @@ def main():
 
 if __name__=="__main__":
 
-    #main()
-    get_idle_accounts()
+    main()
+    #get_idle_accounts()

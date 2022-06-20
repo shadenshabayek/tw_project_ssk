@@ -28,7 +28,8 @@ def get_list_users(collection_interupted, filename):
 
     elif collection_interupted == 1 :
 
-        timestr = time.strftime("%Y_%m_%d")
+        #timestr = time.strftime("%Y_%m_%d")
+        timestr = '2022_06_15'
         df_collected = import_data('dataset_2_tweets_new_list_' + timestr  + '.csv')
 
         list1 = df_collected.username.unique().tolist()
@@ -43,8 +44,8 @@ def main(start, end):
 
     load_dotenv()
 
-    timestr = time.strftime("%Y_%m_%d")
-    #timestr = '2022_06_13'
+    #timestr = time.strftime("%Y_%m_%d")
+    timestr = '2022_06_15'
     filename = 'dataset_1_user_metrics_new_list_2022_06_12.csv'
     collection_interupted = 0
     list_initial = get_list_users(collection_interupted = collection_interupted,
@@ -71,8 +72,8 @@ def main(start, end):
 
 if __name__=="__main__":
 
-    # main(start =  '2022-01-01T23:00:00Z',
-    #     end = '2022-03-01T23:00:00Z')
+    main(start =  '2022-01-01T23:00:00Z',
+        end = '2022-03-01T23:00:00Z')
 
     # main(start =  '2022-03-01T23:00:00Z',
     #     end = '2022-04-01T23:00:00Z')
@@ -80,8 +81,5 @@ if __name__=="__main__":
     # main(start =  '2022-04-01T23:00:00Z',
     #     end = '2022-05-01T23:00:00Z')
 
-    # main(start =  '2022-03-01T23:00:00Z',
-    #     end = '2022-04-01T23:00:00Z')
-
-    main(start =  '2022-05-01T23:00:00Z',
-        end = '2022-06-01T23:00:00Z')
+    # main(start =  '2022-05-01T23:00:00Z',
+    #     end = '2022-06-01T23:00:00Z')
